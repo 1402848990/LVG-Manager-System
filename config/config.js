@@ -3,9 +3,9 @@
  */
 
 module.exports = {
-  dbname: "koatest",
-  username: "root",
-  password: "123456",
-  host: "localhost",
-  port: "3306"
+  dbname: 'LVG_Manager_System',
+  username: 'root',
+  password: '123456',
+  host: 'localhost',
+  port: '3306'
 };

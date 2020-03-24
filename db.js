@@ -57,21 +57,23 @@ function defineModel(name, attributes) {
       };
     }
   }
-  attrs.uniqueId = {
-    type: Sequelize.STRING,
-    // primaryKey: true,
-    // autoIncrement: true,
-    uniqu: true,
-    defaultValue: generateId()
-  };
+  // uuid
+  // attrs.uniqueId = {
+  //   type: Sequelize.STRING,
+  //   uniqu: true,
+  //   defaultValue: generateId()
+  // };
+  // 创建时间
   attrs.createdAt = {
     type: Sequelize.BIGINT,
     allowNull: true
   };
+  // 更新时间
   attrs.updatedAt = {
     type: Sequelize.BIGINT,
     allowNull: true
   };
+  // 版本
   attrs.version = {
     type: Sequelize.BIGINT,
     allowNull: true

@@ -1,12 +1,13 @@
 /**
- * users表的Model
+ *@description users表的Model
  */
 
 const db = require("../db");
 
 const UserModel = db.defineModel("users", {
-  username: db.STRING,
-  password: db.STRING
+  userName: db.STRING,
+  passWord: db.STRING,
+  phone: db.INTEGER
 });
 
 module.exports = UserModel;
