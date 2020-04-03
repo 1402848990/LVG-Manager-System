@@ -1,20 +1,58 @@
 const Koa = require('koa');
-const app = new Koa();
+// const app = new Koa();
+// websocket
+const websockify = require('koa-websocket');
 // ORM
 const Sequelize = require('sequelize');
 // 路由
+const route = require('koa-route');
 const router = require('koa-router')();
 // cors
 const cors = require('koa2-cors');
+const httpproxy = require('koa-better-http-proxy');
 // bodyParser
 const bodyParser = require('koa-bodyparser');
 const passport = require('koa-passport');
 const koajwt = require('koa-jwt');
 const key = require('./config/key');
 const moment = require('moment');
-// User接口
+// 接口
 const User = require('./api/User');
 const Sms = require('./api/SMS');
+const Host = require('./api/Host');
+
+const app = websockify(new Koa());
+app.ws.use(function(ctx, next) {
+  ctx.websocket.send(`ws-连接成功! ${Date.now()}`);
+  return next(ctx);
+});
+
+// ws
+app.ws.use(
+  route.all('/wstest', function(ctx) {
+    console.log('all');
+    setInterval(() => {
+      let data = JSON.stringify({
+        id: Math.ceil(Math.random() * 1000),
+        time: Date.now()
+        // msg: '888'
+      });
+      ctx.websocket.send(data);
+    }, 2000);
+    /**接收消息*/
+    ctx.websocket.on('message', function(message) {
+      console.log(message);
+      // 返回给前端的数据
+      setInterval(() => {
+        let data = JSON.stringify({
+          id: Math.ceil(Math.random() * 1000),
+          time: Date.now()
+        });
+        ctx.websocket.send(data);
+      }, 5000);
+    });
+  })
+);
 
 // 配置跨域
 app.use(
@@ -33,7 +71,6 @@ app.use(
 
 // 全局token验证
 // require("./config/passport")(passport);
-console.log(1);
 // app.use(async (ctx, next) => {
 //   console.log(3);
 //   require('./config/tokenCheck')(ctx);
@@ -65,7 +102,6 @@ app.use(
     path: [/^\/api\/User\/login/, /^\/api\/User\/register/, /^\/api\/Sms/]
   })
 );
-console.log(2);
 
 /**
  * User接口
@@ -77,6 +113,11 @@ router.use('/api/User', User);
  * SMS接口
  */
 router.use('/api/Sms', Sms);
+
+/**
+ * Host接口
+ */
+router.use('/api/Host', Host);
 
 router.get('/', async ctx => {
   ctx.body = 'index';

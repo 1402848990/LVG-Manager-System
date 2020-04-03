@@ -37,8 +37,8 @@ router.post('/sendSmsCheckCode', async ctx => {
 
   // 客户签名
   const client = new Core({
-    accessKeyId: 'LTAI4FcLucjk1h8HZcaFBSRQ',
-    accessKeySecret: 'yX2uCOUdIsESuTFfdz1Wx9oxfuGrvG',
+    accessKeyId: '',
+    accessKeySecret: '',
     endpoint: 'https://dysmsapi.aliyuncs.com',
     apiVersion: '2017-05-25'
   });

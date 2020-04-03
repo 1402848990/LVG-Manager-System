@@ -7,7 +7,7 @@ const Sequelize = require('sequelize');
 const jwt = require('jsonwebtoken');
 const key = require('../config/key');
 const models = require('../models');
-const { UserModel } = models;
+const { UserModel, LoginLogModel } = models;
 const {
   userCreate,
   userBulkCreate,
@@ -15,7 +15,8 @@ const {
   userQueryOne,
   userUpdate,
   userBulkUpdate,
-  userDelete
+  userDelete,
+  getClientIP
 } = require('../utils');
 
 const Op = Sequelize.Op;
@@ -26,12 +27,12 @@ const Op = Sequelize.Op;
  */
 router.post('/login', async ctx => {
   console.log('收到登录请求');
-  const { userName, passWord, phone } = ctx.request.body;
+  const { userName, passWord, phone, ip, address } = ctx.request.body;
   // 通过手机登录或者用户名登录
   const userInfo = phone
     ? await userQueryOne(UserModel, { phone })
     : await userQueryOne(UserModel, { userName });
-  // 用户或手机号是否存在
+  // 用户名或手机号是否存在
   if (!userInfo) {
     ctx.status = 200;
     ctx.body = {
@@ -42,31 +43,44 @@ router.post('/login', async ctx => {
     };
   } else {
     // 密码是否正确
-    const { passWord: dbPass, id, phone } = userInfo;
+    const { passWord: dbPass, id, phone: dbphone } = userInfo;
     let checkPass = true;
     if (!phone) {
       checkPass = bcrypt.compareSync(passWord, dbPass);
     }
     if (checkPass) {
+      // console.log('ctx', getClientIP(ctx.request));
+      console.log('ip', ctx.request.ip);
+
       // 密码正确
       const user = {
         userName,
         id,
-        phone
+        phone: dbphone
       };
       // 生成token 有效期1小时
       const token = jwt.sign(user, key.loginKey, {
-        expiresIn: 20
+        expiresIn: 1800
       });
-      ctx.status = 200;
       // 在header中返回token
       ctx.res.setHeader('Authorization', token);
       ctx.set('token', token);
+      ctx.status = 200;
       ctx.body = {
         success: true,
         message: '登录成功！',
-        token: `Bearer ${token}`
+        token: `Bearer ${token}`,
+        userName,
+        id
       };
+
+      // 登录信息存到loginLog数据表中
+      await userCreate(LoginLogModel, {
+        uid: id,
+        ip,
+        address,
+        type: phone ? 'phone' : 'userName'
+      });
     } else {
       // 密码错误
       ctx.status = 200;
@@ -132,6 +146,30 @@ router.post('/register', async ctx => {
     ctx.status = 500;
     ctx.body = '服务器错误!';
   }
+});
+
+/**
+ * @route api/User/loginLog
+ * @description 获取用户登录日志
+ */
+router.post('/loginLog', async ctx => {
+  const { id: uid } = ctx.request.body;
+  const res = await userQuery(
+    LoginLogModel,
+    {
+      uid: Number(uid)
+    },
+    { order: [['id', 'DESC']] }
+  );
+  // console.log('登录日志：', res);
+  const total = await LoginLogModel.count({ where: { uid: Number(uid) } });
+  console.log('total', total);
+
+  ctx.status = 200;
+  ctx.body = {
+    success: true,
+    data: res
+  };
 });
 
 module.exports = router.routes();

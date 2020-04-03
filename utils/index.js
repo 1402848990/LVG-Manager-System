@@ -12,11 +12,12 @@ async function userBulkCreate(model, rowList) {
 }
 
 // 查询表数据
-async function userQuery(model, filter = {}) {
+async function userQuery(model, filter = {}, extra = {}) {
   const data = {
     where: {
       ...filter
-    }
+    },
+    ...extra
   };
   const res = await model.findAll(data);
   return res;
@@ -52,6 +53,16 @@ async function userDelete(model, where) {
   const res = await model.destroy(where);
 }
 
+// 获取IP
+function getClientIP(req) {
+  return (
+    req.headers['x-forwarded-for'] ||
+    req.connection.remoteAddress ||
+    req.socket.remoteAddress ||
+    req.connection.socket.remoteAddress
+  );
+}
+
 module.exports = {
   userCreate,
   userBulkCreate,
@@ -59,5 +70,6 @@ module.exports = {
   userQueryOne,
   userUpdate,
   userBulkUpdate,
-  userDelete
+  userDelete,
+  getClientIP
 };

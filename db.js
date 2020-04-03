@@ -2,9 +2,9 @@
  * 统一model的规范
  */
 
-const Sequelize = require("sequelize");
-const uuid = require("node-uuid");
-const { dbname, username, password, host } = require("./config/config");
+const Sequelize = require('sequelize');
+const uuid = require('node-uuid');
+const { dbname, username, password, host } = require('./config/config');
 
 //生成唯一id
 function generateId() {
@@ -14,7 +14,8 @@ function generateId() {
 // 实例化sequelize
 const sequelize = new Sequelize(dbname, username, password, {
   host,
-  dialect: "mysql",
+  dialect: 'mysql',
+  logging: false, //不打印log
   pool: {
     max: 5,
     min: 0,
@@ -28,9 +29,9 @@ const sequelize = new Sequelize(dbname, username, password, {
 async function testDBConnect() {
   try {
     await sequelize.authenticate();
-    console.log("数据库连接成功！");
+    console.log('数据库连接成功！');
   } catch (err) {
-    console.log("数据库连接失败--", err);
+    console.log('数据库连接失败--', err);
   }
 }
 
@@ -38,7 +39,7 @@ async function testDBConnect() {
  * model规范
  * 1.主键名为id，int类型
  * 2.每个model都加creatAt/updateAt/version
- * 3.字段默认not null=true
+ * 3.字段默认not null=false
  */
 const ID_TYPE = Sequelize.INTEGER;
 
@@ -47,7 +48,7 @@ function defineModel(name, attributes) {
   let attrs = {};
   for (let key in attributes) {
     let value = attributes[key];
-    if (typeof value === "object" && value["type"]) {
+    if (typeof value === 'object' && value['type']) {
       value.allowNull = value.allowNull || false;
       attrs[key] = value;
     } else {
@@ -154,20 +155,22 @@ function defineModel(name, attributes) {
 }
 
 const TYPES = [
-  "STRING",
-  "INTEGER",
-  "BIGINT",
-  "TEXT",
-  "DOUBLE",
-  "DATEONLY",
-  "BOOLEAN"
+  'STRING',
+  'INTEGER',
+  'BIGINT',
+  'TEXT',
+  'DOUBLE',
+  'DATEONLY',
+  'BOOLEAN',
+  'FLOAT',
+  'BIGINT'
 ];
 
 var exp = {
   defineModel: defineModel,
   sync: () => {
     // only allow create ddl in non-production environment:
-    if (process.env.NODE_ENV !== "production") {
+    if (process.env.NODE_ENV !== 'production') {
       sequelize.sync({ force: true });
     } else {
       throw new Error("Cannot sync() when NODE_ENV is set to 'production'.");
