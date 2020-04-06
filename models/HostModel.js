@@ -14,11 +14,18 @@ const HostModel = db.defineModel('hosts', {
   state: db.INTEGER,
   system: db.STRING,
   cDisk: db.INTEGER,
-  dDisk: db.INTEGER,
+  cDiskUsed: db.FLOAT,
+  dDisk: {
+    type: db.INTEGER,
+    allowNull: true
+  },
   netWidth: db.INTEGER,
   ram: db.INTEGER,
   password: db.STRING,
-  desc: db.STRING
+  desc: {
+    type: db.STRING,
+    allowNull: true
+  }
 });
 
 module.exports = HostModel;

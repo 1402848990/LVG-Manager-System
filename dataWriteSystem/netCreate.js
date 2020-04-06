@@ -1,9 +1,10 @@
 /**
- *@description CPU数据写入server
+ *@description NET数据写入server
  */
 const Koa = require('koa');
 const models = require('../models');
-const { CpuLogsModel, HostModel } = models;
+const { NetLogsModel, HostModel } = models;
+const { userCreate, proNum } = require('../utils');
 const moment = require('moment');
 const Sequelize = require('sequelize');
 
@@ -14,15 +15,16 @@ const Op = Sequelize.Op;
 const now = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
 console.log(`CPU写入服务启动----${now}`);
 
+// app.use(async (ctx, next) => {
 setInterval(dataWrite, 2000);
+// });
 
-app.listen(8090);
+app.listen(8091);
 
 // 写入数据
 async function dataWrite() {
   // 数据写入时间
   const nows = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
-  const used = proRandom();
 
   try {
     // 拿到所有开机的主机id
@@ -44,60 +46,38 @@ async function dataWrite() {
     const creates = hostIdList.map(item => {
       return {
         hid: item,
-        used: proRandom(),
-        ramUsed: proRandom(),
-        gpuUsed: proRandomGpu(),
+        up: proRandom(),
+        down: proRandom(),
         createdAt: Date.now()
       };
     });
-    // console.log('creates', creates);
 
-    const res = await CpuLogsModel.bulkCreate(creates);
-    console.log(`${used}----${nows}`);
+    const res = await NetLogsModel.bulkCreate(creates);
+    console.log(creates, '----', nows);
   } catch (e) {
-    console.log('CPU数据写入报错：', e);
+    console.log('NET数据写入报错：', e);
   }
 }
 
 // 根据不同的概率生成不同范围的随机数
 /**
-  60%：13-35
-  20%：5-13
-  15%：35-50
-  4%： 50-70
-  1%： 70-90
+  60%：200-1500
+  20%：50-200
+  15%：1500-2500
+  4%： 2500-3500
+  1%： 20-50
  */
 function proRandom() {
   const random = Math.floor(Math.random() * 100);
   if (random < 60) {
-    return proNum(13, 35);
+    return proNum(200, 1500);
   } else if (random >= 60 && random < 80) {
-    return proNum(5, 13);
+    return proNum(50, 200);
   } else if (random >= 80 && random < 95) {
-    return proNum(35, 50);
+    return proNum(1500, 2500);
   } else if (random >= 95 && random < 99) {
-    return proNum(50, 70);
+    return proNum(2500, 3500);
   } else {
-    return proNum(70, 95);
+    return proNum(20, 50);
   }
-}
-/**
-  70%：1-10
-  29%：10-20
-  1%:  20-30
- */
-function proRandomGpu() {
-  const random = Math.floor(Math.random() * 100);
-  if (random < 80) {
-    return proNum(1, 10);
-  } else if (random >= 80 && random < 99) {
-    return proNum(10, 20);
-  } else {
-    return proNum(20, 30);
-  }
-}
-
-// 生成两个范围之间的随机数
-function proNum(min, max) {
-  return (Math.random() * (max - min + 1) + min).toFixed(2);
 }

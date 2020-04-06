@@ -1,6 +1,11 @@
 const models = require('../models');
 // const { UserModel } = models;
 
+// 生成两个范围之间的随机数,精确两位小数
+function proNum(min, max) {
+  return (Math.random() * (max - min + 1) + min).toFixed(2);
+}
+
 // 添加数据
 async function userCreate(model, row) {
   await model.create(row);
@@ -71,5 +76,6 @@ module.exports = {
   userUpdate,
   userBulkUpdate,
   userDelete,
-  getClientIP
+  getClientIP,
+  proNum
 };

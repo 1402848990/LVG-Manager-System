@@ -1,5 +1,4 @@
 const Koa = require('koa');
-// const app = new Koa();
 // websocket
 const websockify = require('koa-websocket');
 // ORM
@@ -9,7 +8,6 @@ const route = require('koa-route');
 const router = require('koa-router')();
 // cors
 const cors = require('koa2-cors');
-const httpproxy = require('koa-better-http-proxy');
 // bodyParser
 const bodyParser = require('koa-bodyparser');
 const passport = require('koa-passport');
@@ -20,39 +18,10 @@ const moment = require('moment');
 const User = require('./api/User');
 const Sms = require('./api/SMS');
 const Host = require('./api/Host');
+const Logs = require('./api/Logs');
+const CpuWs = require('./api/CpuWs');
 
 const app = websockify(new Koa());
-app.ws.use(function(ctx, next) {
-  ctx.websocket.send(`ws-连接成功! ${Date.now()}`);
-  return next(ctx);
-});
-
-// ws
-app.ws.use(
-  route.all('/wstest', function(ctx) {
-    console.log('all');
-    setInterval(() => {
-      let data = JSON.stringify({
-        id: Math.ceil(Math.random() * 1000),
-        time: Date.now()
-        // msg: '888'
-      });
-      ctx.websocket.send(data);
-    }, 2000);
-    /**接收消息*/
-    ctx.websocket.on('message', function(message) {
-      console.log(message);
-      // 返回给前端的数据
-      setInterval(() => {
-        let data = JSON.stringify({
-          id: Math.ceil(Math.random() * 1000),
-          time: Date.now()
-        });
-        ctx.websocket.send(data);
-      }, 5000);
-    });
-  })
-);
 
 // 配置跨域
 app.use(
@@ -118,6 +87,20 @@ router.use('/api/Sms', Sms);
  * Host接口
  */
 router.use('/api/Host', Host);
+
+/**
+ * 日志接口
+ */
+router.use('/api/Logs', Logs);
+
+/**
+ * CPU WS接口
+ */
+app.use(async (ctx, next) => {
+  require('./api/CpuWs')(app);
+  require('./api/NetWs')(app);
+  await next();
+});
 
 router.get('/', async ctx => {
   ctx.body = 'index';

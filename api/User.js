@@ -60,7 +60,7 @@ router.post('/login', async ctx => {
       };
       // 生成token 有效期1小时
       const token = jwt.sign(user, key.loginKey, {
-        expiresIn: 1800
+        expiresIn: 3600
       });
       // 在header中返回token
       ctx.res.setHeader('Authorization', token);
