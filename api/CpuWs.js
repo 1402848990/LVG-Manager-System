@@ -13,7 +13,7 @@ module.exports = app => {
 
   app.ws.use(
     route.all('/CpuWs', ctx => {
-      console.log('all');
+      console.log('all', ctx.request.url);
       setInterval(getNowCpu, 2000, ctx);
 
       /**接收消息*/
@@ -30,6 +30,12 @@ module.exports = app => {
       // });
     })
   );
+  app.ws.use(
+    route.get('/CpuWsOne/:hid', ctx => {
+      console.log('one', ctx.request.url);
+      setInterval(getNowCpuOne, 2000, ctx);
+    })
+  );
 };
 
 // 获取最新的所有CPU数据并send
@@ -40,6 +46,20 @@ async function getNowCpu(ctx) {
   res = await CpuLogsModel.findAll({
     where: {},
     limit: total,
+    order: [['id', 'DESC']]
+  });
+  const data = JSON.stringify(res);
+  ctx.websocket.send(data);
+}
+
+// 获取最新的指定主机id的CPU数据并send
+async function getNowCpuOne(ctx) {
+  const hid = ctx.request.url.split('=')[1];
+  // console.log('hid', hid);
+
+  // 拿到所有主机cpu实时数据
+  res = await CpuLogsModel.findOne({
+    where: { hid },
     order: [['id', 'DESC']]
   });
   const data = JSON.stringify(res);

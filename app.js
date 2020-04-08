@@ -10,6 +10,8 @@ const router = require('koa-router')();
 const cors = require('koa2-cors');
 // bodyParser
 const bodyParser = require('koa-bodyparser');
+const koabody = require('koa-body');
+const multer = require('koa-multer');
 const passport = require('koa-passport');
 const koajwt = require('koa-jwt');
 const key = require('./config/key');
@@ -20,6 +22,8 @@ const Sms = require('./api/SMS');
 const Host = require('./api/Host');
 const Logs = require('./api/Logs');
 const CpuWs = require('./api/CpuWs');
+
+const fs = require('fs');
 
 const app = websockify(new Koa());
 
@@ -68,7 +72,12 @@ app.use(
   koajwt({
     secret: key.loginKey
   }).unless({
-    path: [/^\/api\/User\/login/, /^\/api\/User\/register/, /^\/api\/Sms/]
+    path: [
+      /^\/api\/User\/login/,
+      /^\/api\/User\/register/,
+      /^\/api\/Sms/,
+      /^\/upload/
+    ]
   })
 );
 

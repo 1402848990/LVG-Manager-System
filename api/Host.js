@@ -33,13 +33,46 @@ router.post('/createHost', async ctx => {
   try {
     const res = await userCreate(HostModel, { ...hostInfo });
     // console.log('-------res', res);
-
+    const { id } = await userQueryOne(
+      HostModel,
+      {},
+      { order: [['id', 'DESC']] }
+    );
     ctx.status = 200;
     ctx.body = {
-      success: true
+      success: true,
+      id
     };
   } catch (e) {
     console.log('创建host报错：', e);
+    ctx.status = 500;
+    ctx.body = {
+      success: false
+    };
+  }
+});
+
+/**
+ * @description 修改主机配置接口
+ */
+router.post('/editHost', async ctx => {
+  // 拿到主机ID和修改的数据
+  const { id, hostInfo } = ctx.request.body;
+  // hostInfo.openAt = Date.now();
+  // hostInfo.closeAt = 0;
+  // hostInfo.password = 123456;
+  console.log(hostInfo, id);
+
+  try {
+    const res = await HostModel.update({ ...hostInfo }, { where: { id } });
+    console.log('-------res', res);
+    ctx.status = 200;
+    ctx.body = {
+      success: true,
+      id
+    };
+  } catch (e) {
+    console.log('编辑host报错：', e);
     ctx.status = 500;
     ctx.body = {
       success: false
@@ -71,6 +104,31 @@ router.post('/getAllHost', async ctx => {
     };
   } catch (e) {
     console.log('获取所有主机接口报错：', e);
+    ctx.status = 500;
+    ctx.body = {
+      success: false
+    };
+  }
+});
+
+/**
+ * @description 获取单个主机详情接口
+ */
+router.post('/getHost', async ctx => {
+  const { id } = ctx.request.body;
+
+  try {
+    const res = await userQueryOne(HostModel, {
+      id
+    });
+    // console.log('res', res);
+    ctx.status = 200;
+    ctx.body = {
+      success: true,
+      data: res
+    };
+  } catch (e) {
+    console.log('获取单个主机详情接口报错：', e);
     ctx.status = 500;
     ctx.body = {
       success: false

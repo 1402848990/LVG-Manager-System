@@ -42,7 +42,7 @@ async function userQueryOne(model, filter = {}, extra = {}) {
 }
 
 // 更新数据
-async function userUpdate(data, where) {
+async function userUpdate(model, data, where) {
   const res = await model.update(data, where);
   return res;
 }

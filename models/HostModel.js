@@ -12,6 +12,7 @@ const HostModel = db.defineModel('hosts', {
   openAt: db.BIGINT,
   closeAt: db.BIGINT,
   state: db.INTEGER,
+  coreNum: db.INTEGER,
   system: db.STRING,
   cDisk: db.INTEGER,
   cDiskUsed: db.FLOAT,

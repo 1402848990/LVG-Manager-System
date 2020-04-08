@@ -60,7 +60,7 @@ router.post('/login', async ctx => {
       };
       // 生成token 有效期1小时
       const token = jwt.sign(user, key.loginKey, {
-        expiresIn: 3600
+        expiresIn: 8000
       });
       // 在header中返回token
       ctx.res.setHeader('Authorization', token);
@@ -95,12 +95,30 @@ router.post('/login', async ctx => {
 /**
  * @router POST api/User/userInfo
  * @description 返回用户信息
- * @access 私密
  */
 router.post('/userInfo', async ctx => {
-  console.log('ctx', ctx.state);
-  const { id } = ctx.state.user;
+  const { id } = ctx.request.body;
   const info = await userQueryOne(UserModel, { id });
+  ctx.body = {
+    success: true,
+    info
+  };
+});
+
+/**
+ * @router POST api/User/editUserInfo
+ * @description 返回用户信息
+ */
+router.post('/editUserInfo', async ctx => {
+  const { id, changeData } = ctx.request.body;
+  const info = await UserModel.update(
+    { ...changeData },
+    {
+      where: {
+        id
+      }
+    }
+  );
   ctx.body = {
     success: true,
     info
