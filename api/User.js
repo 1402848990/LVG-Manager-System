@@ -43,7 +43,12 @@ router.post('/login', async ctx => {
     };
   } else {
     // 密码是否正确
-    const { passWord: dbPass, id, phone: dbphone } = userInfo;
+    const {
+      passWord: dbPass,
+      id,
+      phone: dbphone,
+      userName: dbusername
+    } = userInfo;
     let checkPass = true;
     if (!phone) {
       checkPass = bcrypt.compareSync(passWord, dbPass);
@@ -70,7 +75,7 @@ router.post('/login', async ctx => {
         success: true,
         message: '登录成功！',
         token: `Bearer ${token}`,
-        userName,
+        userName: userName || dbusername,
         id
       };
 
@@ -107,7 +112,7 @@ router.post('/userInfo', async ctx => {
 
 /**
  * @router POST api/User/editUserInfo
- * @description 返回用户信息
+ * @description 修改用户信息
  */
 router.post('/editUserInfo', async ctx => {
   const { id, changeData } = ctx.request.body;
@@ -122,6 +127,26 @@ router.post('/editUserInfo', async ctx => {
   ctx.body = {
     success: true,
     info
+  };
+});
+
+/**
+ * @router POST api/User/changePassWord
+ * @description 修改密码
+ */
+router.post('/changePassWord', async ctx => {
+  const { id, passWord } = ctx.request.body;
+  const hashPassword = bcrypt.hashSync(passWord, 10);
+  const info = await UserModel.update(
+    { passWord: hashPassword },
+    {
+      where: {
+        id
+      }
+    }
+  );
+  ctx.body = {
+    success: true
   };
 });
 

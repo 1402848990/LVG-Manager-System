@@ -4,7 +4,7 @@
 
 const db = require('../db');
 
-const HostModel = db.defineModel('hosts', {
+const HostModel = db.configureModel('hosts', {
   uid: db.INTEGER, // 用户id
   hostIp: db.STRING,
   hostName: db.STRING,

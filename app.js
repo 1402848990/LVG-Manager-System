@@ -20,6 +20,7 @@ const moment = require('moment');
 const User = require('./api/User');
 const Sms = require('./api/SMS');
 const Host = require('./api/Host');
+const WarnSetting = require('./api/WarnSetting');
 const Logs = require('./api/Logs');
 const CpuWs = require('./api/CpuWs');
 
@@ -98,18 +99,34 @@ router.use('/api/Sms', Sms);
 router.use('/api/Host', Host);
 
 /**
+ * 预警接口
+ */
+router.use('/api/WarnSetting', WarnSetting);
+
+/**
  * 日志接口
  */
 router.use('/api/Logs', Logs);
 
 /**
- * CPU WS接口
+ *  WS接口
  */
 app.use(async (ctx, next) => {
   require('./api/CpuWs')(app);
   require('./api/NetWs')(app);
   await next();
 });
+
+/**
+ * 预警监控
+ */
+require('./api/WarnMonitor');
+
+/**
+ * 旧数据清理
+ */
+
+
 
 router.get('/', async ctx => {
   ctx.body = 'index';
@@ -121,12 +138,3 @@ app.use(router.routes()).use(router.allowedMethods());
 
 // server 端口号
 app.listen('8088');
-
-// 格式化model时间
-function formatModelTime(data) {
-  for (let item of data) {
-    item.createdAt = moment(item.createdAt).format('YYYY-MM-DD HH:mm:ss');
-    item.updatedAt = moment(item.updatedAt).format('YYYY-MM-DD HH:mm:ss');
-  }
-  return data;
-}

@@ -2,11 +2,12 @@
  *@description users表的Model
  */
 
-const db = require("../db");
+const db = require('../db');
 
-const UserModel = db.defineModel("users", {
+const UserModel = db.configureModel('users', {
   userName: db.STRING,
   passWord: db.STRING,
+  remark: db.STRING,
   phone: db.INTEGER
 });
 

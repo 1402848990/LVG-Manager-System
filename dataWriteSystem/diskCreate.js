@@ -1,9 +1,9 @@
 /**
- *@description NET数据写入server
+ *@description Disk数据写入server
  */
 const Koa = require('koa');
 const models = require('../models');
-const { NetLogsModel, HostModel } = models;
+const { DiskLogsModel, HostModel } = models;
 const { userCreate, proNum } = require('../utils');
 const moment = require('moment');
 const Sequelize = require('sequelize');
@@ -16,10 +16,10 @@ const now = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
 console.log(`CPU写入服务启动----${now}`);
 
 // app.use(async (ctx, next) => {
-setInterval(dataWrite, 2000);
+setInterval(dataWrite, 10000);
 // });
 
-app.listen(8091);
+app.listen(8092);
 
 // 写入数据
 async function dataWrite() {
@@ -46,38 +46,35 @@ async function dataWrite() {
     const creates = hostIdList.map(item => {
       return {
         hid: item,
-        up: proRandom(),
-        down: proRandom(),
+        read: proRandom(),
+        write: proRandom(),
         createdAt: Date.now()
       };
     });
 
-    const res = await NetLogsModel.bulkCreate(creates);
+    const res = await DiskLogsModel.bulkCreate(creates);
     console.log(creates, '----', nows);
   } catch (e) {
-    console.log('NET数据写入报错：', e);
+    console.log('Disk数据写入报错：', e);
   }
 }
 
 // 根据不同的概率生成不同范围的随机数
 /**
-  80%：200-800
-  10%：50-200
-  8%：800-1500
-  1%： 1500-2500
-  1%： 20-50
+  80%：200-500
+  10%：500-2000
+  8%：2000-2500
+  1%： 2500-3000
  */
 function proRandom() {
   const random = Math.floor(Math.random() * 100);
   if (random < 80) {
-    return proNum(200, 800);
+    return proNum(200, 500);
   } else if (random >= 80 && random < 90) {
-    return proNum(50, 200);
+    return proNum(500, 2000);
   } else if (random >= 90 && random < 98) {
-    return proNum(800, 1500);
-  } else if (random >= 98 && random < 99) {
-    return proNum(1500, 2500);
+    return proNum(2000, 2500);
   } else {
-    return proNum(20, 50);
+    return proNum(2500, 3000);
   }
 }

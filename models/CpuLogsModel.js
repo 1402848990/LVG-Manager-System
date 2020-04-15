@@ -4,7 +4,7 @@
 
 const db = require('../db');
 
-const CpuLogsModel = db.defineModel('cpuLogs', {
+const CpuLogsModel = db.configureModel('cpuLogs', {
   hid: db.INTEGER, // 主机id
   used: db.FLOAT, // cpu使用率
   ramUsed: db.FLOAT, // RAM使用率

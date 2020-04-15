@@ -36,19 +36,19 @@ async function testDBConnect() {
 }
 
 /**
- * model规范
+ * model封装
  * 1.主键名为id，int类型
  * 2.每个model都加creatAt/updateAt/version
  * 3.字段默认not null=false
  */
 const ID_TYPE = Sequelize.INTEGER;
-
-function defineModel(name, attributes) {
+function configureModel(name, attr) {
   testDBConnect();
-  let attrs = {};
-  for (let key in attributes) {
-    let value = attributes[key];
+  const attrs = {};
+  for (const key in attr) {
+    let value = attr[key];
     if (typeof value === 'object' && value['type']) {
+      // not null=false
       value.allowNull = value.allowNull || false;
       attrs[key] = value;
     } else {
@@ -167,7 +167,7 @@ const TYPES = [
 ];
 
 var exp = {
-  defineModel: defineModel,
+  configureModel: configureModel,
   sync: () => {
     // only allow create ddl in non-production environment:
     if (process.env.NODE_ENV !== 'production') {

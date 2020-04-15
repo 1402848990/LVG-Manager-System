@@ -34,26 +34,22 @@ async function dataWrite() {
       },
       attributes: ['id']
     });
-    // console.log('resList', resList);
     const hostIdList = [];
     resList.map(item => {
       hostIdList.push(item.dataValues.id);
     });
-    // console.log('hostIdList', hostIdList);
-
     const creates = hostIdList.map(item => {
       return {
         hid: item,
-        used: proRandom(),
-        ramUsed: proRandom(),
-        gpuUsed: proRandomGpu(),
+        used: proRandom(), // CPU使用率
+        ramUsed: proRandom(), // 内存使用率
+        gpuUsed: proRandomGpu(), // gpu使用率
         createdAt: Date.now()
       };
     });
-    // console.log('creates', creates);
 
     const res = await CpuLogsModel.bulkCreate(creates);
-    console.log(`${used}----${nows}`);
+    console.log(`主机CPU、RAM、GPU数据写入成功----${nows}`);
   } catch (e) {
     console.log('CPU数据写入报错：', e);
   }

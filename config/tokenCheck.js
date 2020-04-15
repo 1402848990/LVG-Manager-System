@@ -5,7 +5,6 @@ const jwt = require('jsonwebtoken');
 const key = require('./key');
 
 module.exports = ctx => {
-  console.log('4');
   if (ctx.header && ctx.header.authorization) {
     const parts = ctx.header.authorization.split(' ');
     if (parts.length === 2) {
@@ -22,7 +21,7 @@ module.exports = ctx => {
           });
         } catch (error) {
           ctx.status = 401;
-          ctx.body = error;
+          ctx.body = '登录失效，请重新登录~';
           console.log('token-error', error);
         }
       }

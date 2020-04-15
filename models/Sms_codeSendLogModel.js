@@ -4,7 +4,7 @@
 
 const db = require('../db');
 
-const Sms_codeSendLogModel = db.defineModel('sms_codeSendLog', {
+const Sms_codeSendLogModel = db.configureModel('sms_codeSendLog', {
   phone: db.INTEGER,
   code: db.INTEGER
 });

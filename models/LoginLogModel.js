@@ -4,7 +4,7 @@
 
 const db = require('../db');
 
-const loginLog = db.defineModel('loginLogs', {
+const loginLog = db.configureModel('loginLogs', {
   uid: db.INTEGER, // 用户id
   ip: db.STRING,
   address: db.STRING,

@@ -4,7 +4,7 @@
 
 const db = require('../db');
 
-const OperationModel = db.defineModel('operationLogs', {
+const OperationModel = db.configureModel('operationLogs', {
   uid: db.INTEGER, // 用户id
   hids: db.STRING, // 受影响的主机id
   log: {
