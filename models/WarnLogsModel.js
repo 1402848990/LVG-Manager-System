@@ -10,7 +10,11 @@ const WarnLogsModel = db.configureModel('warnLogs', {
   type: db.STRING, // 触发类型
   hostName: db.STRING, // 主机名
   warnValue: db.FLOAT, // 触发值
-  settingValue: db.FLOAT // 设置值
+  settingValue: db.FLOAT, // 设置值
+  status: {
+    type: db.INTEGER,
+    allowNull: true
+  } // 是否已读
 });
 
 module.exports = WarnLogsModel;

@@ -24,7 +24,7 @@ const {
 } = require('../utils');
 const Op = Sequelize.Op;
 
-setInterval(scan, 60000);
+// setInterval(scan, 1000000);
 // scan();
 
 // 扫描数据库数据，是否有达到预警触发值并且开启预警

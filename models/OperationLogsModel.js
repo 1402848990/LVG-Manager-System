@@ -11,7 +11,11 @@ const OperationModel = db.configureModel('operationLogs', {
     type: db.STRING,
     allowNull: true
   },
-  type: db.STRING // 操作类型
+  type: db.STRING, // 操作类型
+  status: {
+    type: db.INTEGER,
+    allowNull: true
+  } // 是否已读
 });
 
 module.exports = OperationModel;

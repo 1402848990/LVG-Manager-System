@@ -1,8 +1,9 @@
 const models = require('../models');
+const Sequelize = require('sequelize');
 const { CpuLogsModel, HostModel } = models;
 const { userQuery, userQueryOne } = require('../utils');
 const route = require('koa-route');
-
+const Op = Sequelize.Op;
 let res;
 
 module.exports = app => {
@@ -13,6 +14,12 @@ module.exports = app => {
 
   app.ws.use(
     route.all('/CpuWs', ctx => {
+      console.log('all', ctx.request.url);
+      // setInterval(getNowCpu, 2000, ctx);
+    })
+  );
+  app.ws.use(
+    route.get('/CpuWsNowByHid/:uid', ctx => {
       console.log('all', ctx.request.url);
       setInterval(getNowCpu, 2000, ctx);
     })
@@ -51,12 +58,24 @@ module.exports = app => {
 
 // 获取最新的所有CPU数据并send
 async function getNowCpu(ctx) {
-  // 拿到主机总数
-  const total = await HostModel.count({});
-  // 拿到所有主机cpu实时数据
+  // 用户id
+  const uid = 6;
+  // const uid = ctx.request.url.split('=')[1];
+  // 拿到用户名下所有开机主机id
+  const reshids = await userQuery(
+    HostModel,
+    { uid, state: { [Op.not]: 0 } },
+    { attributes: ['id'] }
+  );
+
+  const hids = reshids.map(item => item.dataValues.id);
+  // console.log('hids:', hids);
+
+  // const total = await HostModel.count({});
+  // 拿到用户名下所有主机cpu实时数据
   res = await CpuLogsModel.findAll({
-    where: {},
-    limit: total,
+    where: { hid: { [Op.in]: hids } },
+    limit: hids.length,
     order: [['id', 'DESC']]
   });
   const data = JSON.stringify(res);

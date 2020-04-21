@@ -38,6 +38,8 @@ async function dataWrite() {
     resList.map(item => {
       hostIdList.push(item.dataValues.id);
     });
+    console.log('hostIdList', hostIdList);
+
     const creates = hostIdList.map(item => {
       return {
         hid: item,

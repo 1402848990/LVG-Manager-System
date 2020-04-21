@@ -1,5 +1,47 @@
 const models = require('../models');
+const Core = require('@alicloud/pop-core');
 // const { UserModel } = models;
+
+async function sendSMS(phone, hid, hostName, type, setValue, warnValue, way) {
+  const sendType = type.includes('CPU')
+    ? `CPU${setValue}_used${warnValue}`
+    : type.includes('RAM')
+    ? `RAM${setValue}_used${warnValue}`
+    : `NET${setValue}_${Math.floor(warnValue)}`;
+  // sms模板code
+  const templateCodeList = {
+    register: 'SMS_186576385',
+    login: 'SMS_186596465',
+    warn: 'SMS_187752216'
+  };
+
+  // 客户签名
+  const client = new Core({
+    accessKeyId: 'LTAI4FcLucjk1h8HZcaFBSRQ',
+    accessKeySecret: 'yX2uCOUdIsESuTFfdz1Wx9oxfuGrvG',
+    endpoint: 'https://dysmsapi.aliyuncs.com',
+    apiVersion: '2017-05-25'
+  });
+
+  // sms模板参数
+  const params = {
+    RegionId: 'cn-hangzhou',
+    PhoneNumbers: phone,
+    SignName: '大规模虚拟集群管理系统',
+    TemplateCode: templateCodeList[way],
+    TemplateParam: JSON.stringify({
+      code: `id${hid}_${sendType}`
+    })
+  };
+  console.log('params', params);
+
+  const requestOption = {
+    method: 'POST'
+  };
+  // 短信发送
+  const result = await client.request('SendSms', params, requestOption);
+  console.log('预警短信发送-----', result);
+}
 
 // 生成两个范围之间的随机数,精确两位小数
 function proNum(min, max) {
@@ -77,5 +119,6 @@ module.exports = {
   userBulkUpdate,
   userDelete,
   getClientIP,
-  proNum
+  proNum,
+  sendSMS
 };

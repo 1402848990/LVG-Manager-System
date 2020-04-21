@@ -10,12 +10,8 @@ const router = require('koa-router')();
 const cors = require('koa2-cors');
 // bodyParser
 const bodyParser = require('koa-bodyparser');
-const koabody = require('koa-body');
-const multer = require('koa-multer');
-const passport = require('koa-passport');
 const koajwt = require('koa-jwt');
 const key = require('./config/key');
-const moment = require('moment');
 // 接口
 const User = require('./api/User');
 const Sms = require('./api/SMS');
@@ -23,6 +19,7 @@ const Host = require('./api/Host');
 const WarnSetting = require('./api/WarnSetting');
 const Logs = require('./api/Logs');
 const CpuWs = require('./api/CpuWs');
+const Bell = require('./api/Bell');
 
 const fs = require('fs');
 
@@ -109,9 +106,15 @@ router.use('/api/WarnSetting', WarnSetting);
 router.use('/api/Logs', Logs);
 
 /**
+ * 消息处理接口
+ */
+router.use('/api/Bell', Bell);
+
+/**
  *  WS接口
  */
 app.use(async (ctx, next) => {
+  require('./api/BellWs')(app);
   require('./api/CpuWs')(app);
   require('./api/NetWs')(app);
   await next();
@@ -126,14 +129,10 @@ require('./api/WarnMonitor');
  * 旧数据清理
  */
 
-
-
 router.get('/', async ctx => {
   ctx.body = 'index';
 });
 
-// app.use(passport.initialize());
-// app.use(passport.session());
 app.use(router.routes()).use(router.allowedMethods());
 
 // server 端口号

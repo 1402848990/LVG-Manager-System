@@ -21,7 +21,10 @@ router.post('/sendSmsCheckCode', async ctx => {
 
   // sms模板code
   const templateCodeList = {
-    register: 'SMS_186576385'
+    register: 'SMS_186596465',
+    login: 'SMS_186576385',
+    warn: 'SMS_187750022',
+    changePass: 'SMS_187940663'
   };
 
   // 生成四位验证码
@@ -37,13 +40,16 @@ router.post('/sendSmsCheckCode', async ctx => {
 
   // 客户签名
   const client = new Core({
+    accessKeyId: 'LTAI4FcLucjk1h8HZcaFBSRQ',
+    accessKeySecret: 'yX2uCOUdIsESuTFfdz1Wx9oxfuGrvG',
+    endpoint: 'https://dysmsapi.aliyuncs.com',
     apiVersion: '2017-05-25'
   });
 
   // sms模板参数
   const params = {
     RegionId: 'cn-hangzhou',
-    PhoneNumbers: '15562976106',
+    PhoneNumbers: phone,
     SignName: '大规模虚拟集群管理系统',
     TemplateCode: templateCodeList[way],
     TemplateParam: JSON.stringify({
@@ -55,28 +61,22 @@ router.post('/sendSmsCheckCode', async ctx => {
     method: 'POST'
   };
 
-  ctx.status = 200;
-  ctx.body = {
-    success: true,
-    message: '短信发送成功！'
-  };
-
-  // const result = await client.request('SendSms', params, requestOption);
-  // const { Code: smsResCode } = result;
-  // console.log(result);
-  // if (smsResCode === 'OK') {
-  //   ctx.status = 200;
-  //   ctx.body = {
-  //     success: true,
-  //     message: '短信发送成功！'
-  //   };
-  // } else {
-  //   ctx.status = 500;
-  //   ctx.body = {
-  //     success: false,
-  //     message: '短信发送失败！'
-  //   };
-  // }
+  const result = await client.request('SendSms', params, requestOption);
+  const { Code: smsResCode } = result;
+  console.log(result);
+  if (smsResCode === 'OK') {
+    ctx.status = 200;
+    ctx.body = {
+      success: true,
+      message: '短信发送成功！'
+    };
+  } else {
+    ctx.status = 500;
+    ctx.body = {
+      success: false,
+      message: '短信发送失败！'
+    };
+  }
 });
 
 /**
