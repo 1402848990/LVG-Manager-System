@@ -19,7 +19,7 @@ module.exports = app => {
     })
   );
   app.ws.use(
-    route.get('/CpuWsNowByHid/:uid', ctx => {
+    route.get('/CpuWsNowByUid/:uid', ctx => {
       console.log('all', ctx.request.url);
       setInterval(getNowCpu, 2000, ctx);
     })
@@ -59,7 +59,7 @@ module.exports = app => {
 // 获取最新的所有CPU数据并send
 async function getNowCpu(ctx) {
   // 用户id
-  const uid = 6;
+  const uid = ctx.request.url.split('=')[1];
   // const uid = ctx.request.url.split('=')[1];
   // 拿到用户名下所有开机主机id
   const reshids = await userQuery(

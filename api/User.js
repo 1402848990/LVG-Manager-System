@@ -6,6 +6,7 @@ const bcrypt = require('bcrypt');
 const Sequelize = require('sequelize');
 const jwt = require('jsonwebtoken');
 const key = require('../config/key');
+const axios = require('axios');
 const models = require('../models');
 const { UserModel, LoginLogModel } = models;
 const {
@@ -26,8 +27,8 @@ const Op = Sequelize.Op;
  * @description 登录接口(手机号或者用户名登录)
  */
 router.post('/login', async ctx => {
-  console.log('收到登录请求');
-  const { userName, passWord, phone, ip, address } = ctx.request.body;
+  console.log('-------收到登录请求', ctx.request.ip);
+  const { userName, passWord, phone } = ctx.request.body;
   // 通过手机登录或者用户名登录
   const userInfo = phone
     ? await userQueryOne(UserModel, { phone })
@@ -55,7 +56,6 @@ router.post('/login', async ctx => {
     }
     if (checkPass) {
       // console.log('ctx', getClientIP(ctx.request));
-      console.log('ip', ctx.request.ip);
 
       // 密码正确
       const user = {
@@ -79,10 +79,13 @@ router.post('/login', async ctx => {
         id
       };
 
+      // 获取精确地理位置
+      const address = await getGps(ctx.request.ip);
+
       // 登录信息存到loginLog数据表中
       await userCreate(LoginLogModel, {
         uid: id,
-        ip,
+        ip: ctx.request.ip,
         address,
         type: phone ? 'phone' : 'userName'
       });
@@ -214,5 +217,16 @@ router.post('/loginLog', async ctx => {
     data: res
   };
 });
+
+// 获取登录信息
+async function getGps(ip) {
+  ip.includes('::1') ? (ip = '') : null;
+  const token = '407a2cf82309fdf5ca8549f53a61b776';
+  const res = await axios.get(
+    `http://api.ip138.com/query/?ip=${ip}&token=${token}`
+  );
+  console.log('-----------res', res.data);
+  return `${res.data.data[1]}省${res.data.data[2]}市`;
+}
 
 module.exports = router.routes();

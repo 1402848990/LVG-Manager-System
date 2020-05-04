@@ -22,8 +22,10 @@ const CpuWs = require('./api/CpuWs');
 const Bell = require('./api/Bell');
 
 const fs = require('fs');
+const axios = require('axios');
 
 const app = websockify(new Koa());
+app.proxy = true;
 
 // 配置跨域
 app.use(
@@ -31,6 +33,7 @@ app.use(
     origin: () => {
       // 允许跨域的地址
       return 'http://localhost:3000';
+      // return 'http://wrdemo.cn:80';
     },
     exposeHeaders: ['WWW-Authenticate', 'Server-Authorization'],
     maxAge: 5,
@@ -128,6 +131,10 @@ require('./api/WarnMonitor');
 /**
  * 旧数据清理
  */
+require('./api/DataClear');
+
+// require('./api/getGps');
+// getGps();
 
 router.get('/', async ctx => {
   ctx.body = 'index';
