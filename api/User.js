@@ -221,7 +221,7 @@ router.post('/loginLog', async ctx => {
 // 获取登录信息
 async function getGps(ip) {
   ip.includes('::1') ? (ip = '') : null;
-  const token = '407a2cf82309fdf5ca8549f53a61b776';
+  const token = '407a2cf82309f*******61b776';
   const res = await axios.get(
     `http://api.ip138.com/query/?ip=${ip}&token=${token}`
   );

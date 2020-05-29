@@ -87,4 +87,45 @@ router.post('/readBell', async ctx => {
   }
 });
 
+/**
+ * @description 阅读全部消息
+ */
+router.post('/readBellAll', async ctx => {
+  const { uid, type } = ctx.request.body;
+  try {
+    // 区分操作记录和预警记录
+    const res =
+      type === 'warn'
+        ? await userUpdate(
+            WarnLogsModel,
+            { status: 1 },
+            { where: { uid, status: 0 } }
+          )
+        : await userUpdate(
+            OperationLogsModel,
+            { status: 1 },
+            { where: { uid, status: 0 } }
+          );
+    // 如果阅读了预警消息要把主机状态变为正常
+    if (type === 'warn') {
+      await userUpdate(
+        HostModel,
+        { state: 1 },
+        { where: { uid: uid, state: 0 } }
+      );
+    }
+    ctx.status = 200;
+    ctx.body = {
+      success: true,
+      data: res
+    };
+  } catch (e) {
+    console.log('阅读全部记录接口报错：', e);
+    ctx.status = 500;
+    ctx.body = {
+      success: false
+    };
+  }
+});
+
 module.exports = router.routes();
