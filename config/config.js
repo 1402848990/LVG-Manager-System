@@ -3,7 +3,7 @@
  */
 
 module.exports = {
-  dbname: 'LVG_Manager_System',
+  dbname: 'rational',
   username: 'root',
   password: '123456',
   host: 'localhost',

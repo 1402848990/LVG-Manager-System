@@ -75,10 +75,10 @@ function configureModel(name, attr) {
     allowNull: true
   };
   // 版本
-  attrs.version = {
-    type: Sequelize.BIGINT,
-    allowNull: true
-  };
+  // attrs.version = {
+  //   type: Sequelize.BIGINT,
+  //   allowNull: true
+  // };
   return sequelize.define(name, attrs, {
     tableName: name,
     timestamps: false,
@@ -114,14 +114,14 @@ function configureModel(name, attr) {
         // insert 之前赋创建时间、更新时间、版本号
         obj.createdAt = now;
         obj.updatedAt = now;
-        obj.version = 0;
+        // obj.version = 0;
       },
       beforeUpdate: obj => {
         // console.log("beforeUpdate");
         const now = Date.now();
         // console.log("will update entity...", now);
         obj.updatedAt = now;
-        obj.version++;
+        // obj.version++;
       },
       beforeSave: (obj, options) => {
         // console.log("beforeSave");

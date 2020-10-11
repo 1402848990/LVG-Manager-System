@@ -1,6 +1,4 @@
 const Koa = require('koa');
-// websocket
-const websockify = require('koa-websocket');
 // ORM
 const Sequelize = require('sequelize');
 // 路由
@@ -24,7 +22,7 @@ const Bell = require('./api/Bell');
 const fs = require('fs');
 const axios = require('axios');
 
-const app = websockify(new Koa());
+const app =new Koa();
 app.proxy = true;
 
 // 配置跨域
@@ -32,8 +30,7 @@ app.use(
   cors({
     origin: () => {
       // 允许跨域的地址
-      return 'http://localhost:3000';
-      // return 'http://wrdemo.cn:80';
+      return '*';
     },
     exposeHeaders: ['WWW-Authenticate', 'Server-Authorization'],
     maxAge: 5,
@@ -52,35 +49,35 @@ app.use(
 // });
 
 // 验证有没有token
-app.use((ctx, next) => {
-  return next().catch(err => {
-    if (err.status === 401) {
-      ctx.status = 401;
-      ctx.body = '没有权限！请登录\n';
-    } else {
-      throw err;
-    }
-  });
-});
+// app.use((ctx, next) => {
+//   return next().catch(err => {
+//     if (err.status === 401) {
+//       ctx.status = 401;
+//       ctx.body = '没有权限！请登录\n';
+//     } else {
+//       throw err;
+//     }
+//   });
+// });
 
 // 验证token是否有效
-app.use(async (ctx, next) => {
-  require('./config/tokenCheck')(ctx);
-  await next();
-});
+// app.use(async (ctx, next) => {
+//   require('./config/tokenCheck')(ctx);
+//   await next();
+// });
 
-app.use(
-  koajwt({
-    secret: key.loginKey
-  }).unless({
-    path: [
-      /^\/api\/User\/login/,
-      /^\/api\/User\/register/,
-      /^\/api\/Sms/,
-      /^\/upload/
-    ]
-  })
-);
+// app.use(
+//   koajwt({
+//     secret: key.loginKey
+//   }).unless({
+//     path: [
+//       /^\/api\/User\/login/,
+//       /^\/api\/User\/register/,
+//       /^\/api\/Sms/,
+//       /^\/upload/
+//     ]
+//   })
+// );
 
 /**
  * User接口
@@ -91,47 +88,47 @@ router.use('/api/User', User);
 /**
  * SMS接口
  */
-router.use('/api/Sms', Sms);
+// router.use('/api/Sms', Sms);
 
 /**
  * Host接口
  */
-router.use('/api/Host', Host);
+// router.use('/api/Host', Host);
 
 /**
  * 预警接口
  */
-router.use('/api/WarnSetting', WarnSetting);
+// router.use('/api/WarnSetting', WarnSetting);
 
 /**
  * 日志接口
  */
-router.use('/api/Logs', Logs);
+// router.use('/api/Logs', Logs);
 
 /**
  * 消息处理接口
  */
-router.use('/api/Bell', Bell);
+// router.use('/api/Bell', Bell);
 
 /**
  *  WS接口
  */
-app.use(async (ctx, next) => {
-  require('./api/BellWs')(app);
-  require('./api/CpuWs')(app);
-  require('./api/NetWs')(app);
-  await next();
-});
+// app.use(async (ctx, next) => {
+//   require('./api/BellWs')(app);
+//   require('./api/CpuWs')(app);
+//   require('./api/NetWs')(app);
+//   await next();
+// });
 
 /**
  * 预警监控
  */
-require('./api/WarnMonitor');
+// require('./api/WarnMonitor');
 
 /**
  * 旧数据清理
  */
-require('./api/DataClear');
+// require('./api/DataClear');
 
 // require('./api/getGps');
 // getGps();
