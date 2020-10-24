@@ -14,6 +14,10 @@ const UserModel = db.configureModel('users', {
     type: db.INTEGER,
     allowNull: true
   },
+  monthMoney: { // 本月预算
+    type: db.INTEGER,
+    allowNull: true
+  },
 });
 
 module.exports = UserModel;

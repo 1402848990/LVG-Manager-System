@@ -6,7 +6,8 @@ const db = require('../db');
 
 const ClassificationModel = db.configureModel('classification', {
   userName: db.STRING, // 用户名 
-  classificationName: db.STRING,
+  title: db.STRING,
+  icon: db.STRING,
   type: db.STRING,
 });
 

@@ -163,7 +163,6 @@ const TYPES = [
   'DATEONLY',
   'BOOLEAN',
   'FLOAT',
-  'BIGINT'
 ];
 
 var exp = {
