@@ -4,10 +4,8 @@
 const router = require('koa-router')()
 const bcrypt = require('bcrypt')
 const Sequelize = require('sequelize')
-const jwt = require('jsonwebtoken')
-const key = require('../config/key')
 const axios = require('axios')
-const models = require('../models')
+const models = require('../autoScanModels')
 const { UserModel, LoginLogModel } = models
 const {
   userCreate,
@@ -27,8 +25,8 @@ const Op = Sequelize.Op
  * @description 返回用户信息
  */
 router.post('/userInfo', async (ctx) => {
-  const { id,userName } = ctx.request.body
-  const info = await userQueryOne(UserModel, { userName })
+  const { nickName } = ctx.request.body
+  const info = await userQueryOne(UserModel, { nickName })
   console.log('info...', info)
   ctx.body = {
     success: true,
@@ -41,14 +39,13 @@ router.post('/userInfo', async (ctx) => {
  * @description 修改用户信息
  */
 router.post('/editUserInfo', async (ctx) => {
-  const { changeData } = ctx.request.body
-  const {userName} = changeData
+  const { changeData ,nickName} = ctx.request.body
   console.log('changeData', changeData)
   const info = await UserModel.update(
     { ...changeData },
     {
       where: {
-        userName
+        nickName,
       },
     }
   )
@@ -64,13 +61,13 @@ router.post('/editUserInfo', async (ctx) => {
  */
 router.post('/register', async (ctx) => {
   console.log('register请求：', ctx.request.body)
-  const { userName, passWord, sex, age } = ctx.request.body
+  const { nickName, sex } = ctx.request.body
   // 加密密码
   // const hashPassword = bcrypt.hashSync(passWord, 10);
   try {
     // 查询数据库是否已经存在相同的手机号或者用户名
     const repeat = await userQueryOne(UserModel, {
-      [Op.or]: [{ userName }],
+      [Op.or]: [{ nickName }],
     })
     console.log('repeat...', repeat)
     if (repeat) {
@@ -83,11 +80,9 @@ router.post('/register', async (ctx) => {
     } else {
       // 可以注册
       const res = await userCreate(UserModel, {
-        userName,
+        nickName,
         sex,
-        age,
-        // passWord: hashPassword,
-        // phone
+        amount: 100,
       })
       ctx.status = 200
       ctx.body = {

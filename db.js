@@ -2,13 +2,13 @@
  * 统一model的规范
  */
 
-const Sequelize = require('sequelize');
-const uuid = require('node-uuid');
-const { dbname, username, password, host } = require('./config/config');
+const Sequelize = require('sequelize')
+const uuid = require('node-uuid')
+const { dbname, username, password, host } = require('./config/mysqlConfig')
 
 //生成唯一id
 function generateId() {
-  return uuid.v4();
+  return uuid.v4()
 }
 
 // 实例化sequelize
@@ -19,109 +19,75 @@ const sequelize = new Sequelize(dbname, username, password, {
   pool: {
     max: 5,
     min: 0,
-    idle: 10000
-  }
-});
+    idle: 10000,
+  },
+})
 
 /**
  * 测试数据库连接
  */
 async function testDBConnect() {
   try {
-    await sequelize.authenticate();
-    console.log('数据库连接成功！');
+    await sequelize.authenticate()
+    console.log('model and mysql connected successed')
   } catch (err) {
-    console.log('数据库连接失败--', err);
+    console.log('model and mysql connected failed', err)
   }
 }
 
-/**
- * model封装
- * 1.主键名为id，int类型
- * 2.每个model都加creatAt/updateAt/version
- * 3.字段默认not null=false
- */
-const ID_TYPE = Sequelize.INTEGER;
+const ID_TYPE = Sequelize.INTEGER
 function configureModel(name, attr) {
-  testDBConnect();
-  const attrs = {};
+  testDBConnect()
+  const attrs = {}
   for (const key in attr) {
-    let value = attr[key];
+    let value = attr[key]
     if (typeof value === 'object' && value['type']) {
       // not null=false
-      value.allowNull = value.allowNull || false;
-      attrs[key] = value;
+      value.allowNull = value.allowNull || false
+      attrs[key] = value
     } else {
       attrs[key] = {
         type: value,
-        allowNull: false
-      };
+        allowNull: false,
+      }
     }
   }
-  // uuid
-  // attrs.uniqueId = {
-  //   type: Sequelize.STRING,
-  //   uniqu: true,
-  //   defaultValue: generateId()
-  // };
   // 创建时间
   attrs.createdAt = {
     type: Sequelize.BIGINT,
-    allowNull: true
-  };
+    allowNull: true,
+  }
   // 更新时间
   attrs.updatedAt = {
     type: Sequelize.BIGINT,
-    allowNull: true
-  };
-  // 版本
-  // attrs.version = {
-  //   type: Sequelize.BIGINT,
-  //   allowNull: true
-  // };
+    allowNull: true,
+  }
   return sequelize.define(name, attrs, {
     tableName: name,
     timestamps: false,
     hooks: {
-      beforeBulkCreate: (obj, options) => {
-        // console.log("beforeBulkCreate");
-        // console.log("create--", obj, options);
-        // options.individualHooks = true;
+      beforeBulkCreate: (obj, options) => {},
+      beforeBulkDestroy: (options) => {},
+      beforeBulkUpdate: (options) => {
+        options.individualHooks = true
+        options.personalHooks = true
       },
-      beforeBulkDestroy: options => {
-        // console.log("beforeBulkDestroy(options)");
-      },
-      beforeBulkUpdate: options => {
-        // console.log("beforeBulkUpdate-----------");
-        options.individualHooks = true;
-        options.personalHooks = true;
-      },
-      beforeBulkDestroy: options => {
-        // console.log("beforeBulkDestroy");
-      },
+      beforeBulkDestroy: (options) => {},
       beforeValidate: (obj, options) => {
-        // console.log("beforeValidate");
-        // console.log("beforeValidate-obj");
-        options.individualHooks = true;
-        options.personalHooks = true;
+        options.individualHooks = true
+        options.personalHooks = true
       },
-      afterValidate: (obj, options) => {
-        // console.log("afterValidate");
-      },
-      beforeCreate: obj => {
-        // console.log("beforeCreate");
-        const now = Date.now();
+      afterValidate: (obj, options) => {},
+      beforeCreate: (obj) => {
+        const now = Date.now()
         // insert 之前赋创建时间、更新时间、版本号
-        obj.createdAt = now;
-        obj.updatedAt = now;
-        // obj.version = 0;
+        obj.createdAt = now
+        obj.updatedAt = now
       },
-      beforeUpdate: obj => {
-        // console.log("beforeUpdate");
-        const now = Date.now();
-        // console.log("will update entity...", now);
-        obj.updatedAt = now;
-        // obj.version++;
+      beforeUpdate: (obj) => {
+        const now = Date.now()
+
+        obj.updatedAt = now
       },
       beforeSave: (obj, options) => {
         // console.log("beforeSave");
@@ -144,14 +110,14 @@ function configureModel(name, attr) {
       afterBulkCreate: (instances, options) => {
         // console.log("afterBulkCreate");
       },
-      afterBulkUpdate: options => {
+      afterBulkUpdate: (options) => {
         // console.log("afterBulkUpdate");
       },
-      afterBulkDestroy: options => {
+      afterBulkDestroy: (options) => {
         // console.log("afterBulkDestroy");
-      }
-    }
-  });
+      },
+    },
+  })
 }
 
 const TYPES = [
@@ -163,26 +129,25 @@ const TYPES = [
   'DATEONLY',
   'BOOLEAN',
   'FLOAT',
-];
+]
 
 var exp = {
   configureModel: configureModel,
   sync: () => {
-    // only allow create ddl in non-production environment:
     if (process.env.NODE_ENV !== 'production') {
-      sequelize.sync({ force: true });
+      sequelize.sync({ force: true })
     } else {
-      throw new Error("Cannot sync() when NODE_ENV is set to 'production'.");
+      throw new Error("Cannot sync() when NODE_ENV is set to 'production'.")
     }
-  }
-};
-
-for (let type of TYPES) {
-  exp[type] = Sequelize[type];
+  },
 }
 
-exp.ID = ID_TYPE;
-exp.generateId = generateId;
-exp.sequelize = sequelize;
+for (let type of TYPES) {
+  exp[type] = Sequelize[type]
+}
 
-module.exports = exp;
+exp.ID = ID_TYPE
+exp.generateId = generateId
+exp.sequelize = sequelize
+
+module.exports = exp

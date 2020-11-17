@@ -1,11 +1,11 @@
 /**
- * @description wishList 接口(心愿列表)
+ * @description 充值 接口(钱包)
  */
 
 const router = require('koa-router')()
 const Sequelize = require('sequelize')
-const models = require('../models')
-const { WishListModel } = models
+const models = require('../autoScanModels')
+const { RechargeRecordModel, UserModel } = models
 const {
   userCreate,
   userBulkCreate,
@@ -20,15 +20,27 @@ const {
 const Op = Sequelize.Op
 
 /**
- * @description 创建心愿
+ * @description 充值、支付方法
  */
-router.post('/addWish', async (ctx) => {
-  const wishInfo = ctx.request.body
-  wishInfo.status = 0
-  console.log('wishInfo', wishInfo)
+router.post('/recharge', async (ctx) => {
+  let { money, nickName, type } = ctx.request.body
+  money = Number(money)
+  type = Number(type)
 
   try {
-    const res = await userCreate(WishListModel, { ...wishInfo })
+    const res = await userCreate(RechargeRecordModel, { money, nickName, type })
+    // 获取账户之前的余额 并将新的余额更新到数据库user表
+    const userInfo = await userQueryOne(UserModel, { nickName })
+    let { amount } = userInfo.toJSON()
+    amount = type === 1||'1' ? amount + money : amount - money
+    await UserModel.update(
+      { amount },
+      {
+        where: {
+          nickName,
+        },
+      }
+    )
     console.log('-------res', res)
     ctx.status = 200
     ctx.body = {
@@ -55,7 +67,7 @@ router.post('/editHost', async (ctx) => {
   console.log(hostInfo, id)
 
   try {
-    const res = await WishListModel.update(
+    const res = await RechargeRecordModel.update(
       { ...hostInfo },
       { where: { id } }
     )
@@ -75,19 +87,20 @@ router.post('/editHost', async (ctx) => {
 })
 
 /**
- * @description 获取所有心愿接口
+ * @description 获取充值记录
  */
-router.post('/getWishList', async (ctx) => {
-  const { userName } = ctx.request.body
+router.post('/getRecord', async (ctx) => {
+  const { nickName,type } = ctx.request.body
 
   try {
     const res = await userQuery(
-      WishListModel,
+      RechargeRecordModel,
       {
-        userName,
+        nickName,
+        type
       },
       {
-        order: [['wishLevel','DESC'],['wishPrice']],
+        order: [['id', 'DESC']],
       }
     )
     console.log('res', res)
@@ -97,7 +110,7 @@ router.post('/getWishList', async (ctx) => {
       data: res,
     }
   } catch (e) {
-    console.log('获取心愿列表接口报错：', e)
+    console.log('获取充值记录接口报错：', e)
     ctx.status = 500
     ctx.body = {
       success: false,
@@ -112,12 +125,12 @@ router.post('/deleteWish', async (ctx) => {
   const { id } = ctx.request.body
   console.log('id', id)
   try {
-    const res = await WishListModel.destroy({
+    const res = await RechargeRecordModel.destroy({
       where: {
         id,
       },
     })
-    console.log('删除res', res);
+    console.log('删除res', res)
     ctx.status = 200
     ctx.body = {
       success: true,

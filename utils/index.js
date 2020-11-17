@@ -1,4 +1,4 @@
-const models = require('../models')
+const models = require('../autoScanModels')
 const Core = require('@alicloud/pop-core')
 // const { UserModel } = models;
 

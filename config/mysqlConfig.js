@@ -3,7 +3,7 @@
  */
 
 module.exports = {
-  dbname: 'rational',
+  dbname: 'pinche',
   username: 'root',
   password: '123456',
   host: 'localhost',

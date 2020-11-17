@@ -4,7 +4,7 @@
 
 const router = require('koa-router')()
 const Sequelize = require('sequelize')
-const models = require('../models')
+const models = require('../autoScanModels')
 const { ClassificationModel } = models
 const {
   userCreate,

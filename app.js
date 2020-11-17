@@ -9,10 +9,13 @@ const cors = require('koa2-cors');
 // bodyParser
 const bodyParser = require('koa-bodyparser');
 // 导入接口
-const User = require('./api/User');
-const Classification = require('./api/Classification');
-const Wish = require('./api/WishList');
-const Record = require('./api/RecordList');
+const User = require('./interface/User');
+const Driver = require('./interface/Driver');
+const Urgent = require('./interface/Urgent');
+const Classification = require('./interface/Classification');
+const Wish = require('./interface/WishList');
+const CusRecord = require('./interface/CusRecordList');
+const RechargeRecord = require('./interface/RechargeRecord')
 
 const app =new Koa();
 app.proxy = true;
@@ -36,22 +39,35 @@ app.use(
  * User接口
  */
 app.use(bodyParser());
-router.use('/api/User', User);
+router.use('/interface/User', User);
+/**
+ * 司机接口
+ */
+router.use('/interface/Driver', Driver);
+/**
+ * 紧急联系人接口
+ */
+router.use('/interface/Urgent', Urgent);
+
+/**
+ * RechargeRecord接口  充值接口
+ */
+router.use('/interface/RechargeRecord', RechargeRecord);
 
 /**
  * Classification接口
  */
-router.use('/api/Classification', Classification);
+router.use('/interface/Classification', Classification);
 
 /**
  * Classification接口
  */
-router.use('/api/Wish', Wish);
+router.use('/interface/Wish', Wish);
 
 /**
  * Record接口
  */
-router.use('/api/Record', Record);
+router.use('/interface/CusRecord', CusRecord);
 
 
 router.get('/', async ctx => {
