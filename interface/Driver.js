@@ -8,13 +8,8 @@ const models = require('../autoScanModels')
 const { DriverModel, LoginLogModel } = models
 const {
   userCreate,
-  userBulkCreate,
   userQuery,
   userQueryOne,
-  userUpdate,
-  userBulkUpdate,
-  userDelete,
-  getClientIP,
 } = require('../utils')
 
 const Op = Sequelize.Op
@@ -38,7 +33,7 @@ router.post('/userInfo', async (ctx) => {
  * @description 修改用户信息
  */
 router.post('/editUserInfo', async (ctx) => {
-  const { changeData ,nickName} = ctx.request.body
+  const { changeData, nickName } = ctx.request.body
   console.log('changeData', changeData)
   const info = await DriverModel.update(
     { ...changeData },
@@ -96,15 +91,20 @@ router.post('/register', async (ctx) => {
   }
 })
 
-// 获取登录信息
-async function getGps(ip) {
-  ip.includes('::1') ? (ip = '') : null
-  const token = '407a2cf82309f*******61b776'
-  const res = await axios.get(
-    `http://api.ip138.com/query/?ip=${ip}&token=${token}`
-  )
-  console.log('-----------res', res.data)
-  return `${res.data.data[1]}省${res.data.data[2]}市`
-}
+/**
+ * @router POST api/User/userList
+ * @description 获取所有用户列表
+ */
+router.post('/driList', async (ctx) => {
+  const { nickName, filter = {} } = ctx.request.body
+  console.log('filter',filter)
+  const info = await userQuery(DriverModel, { ...filter })
+  console.log('info...', info)
+  ctx.body = {
+    success: true,
+    info,
+  }
+})
+
 
 module.exports = router.routes()

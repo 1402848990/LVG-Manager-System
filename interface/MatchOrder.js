@@ -1,36 +1,109 @@
 /**
- * @description recordList 接口(账单列表)
+ * @description 匹配订单 接口
  */
 
 const router = require('koa-router')()
 const Sequelize = require('sequelize')
 const models = require('../autoScanModels')
-const {
-  CusRecordListModel,
-  DriRecordListModel,
-  UserModel,
-  DriverModel,
-  RechargeRecordModel,
-  DriRechargeRecordModel
-} = models
+const { CusRecordListModel, DriRecordListModel,DriverModel } = models
 const {
   userCreate,
   userQuery,
   userQueryOne,
 } = require('../utils')
+const uuid = require('node-uuid')
 
 const Op = Sequelize.Op
 
 /**
- * @description 乘客发布拼车单\司机发布行程，通过origin字段进行区分
+ * @description 乘客拼车
  */
-router.post('/add', async (ctx) => {
-  const recordInfo = ctx.request.body
-  recordInfo.status = 0
-  console.log('recordInfo', recordInfo)
+router.post('/match', async (ctx) => {
+  const { cusNum, orderInfo, userName } = ctx.request.body
+  const { id } = orderInfo
+  // 生成唯一编码
+  const matchCode = uuid.v1()
+  // 订单状态， 满员为1  不满员为0
+  const status = cusNum + orderInfo.cusNumIn >= orderInfo.cusNum ? 1 : 0
+  // 已上座乘客
+  const cusNumIn = orderInfo.cusNumIn + cusNum
+
+  orderInfo.userName = userName
+  orderInfo.matchCode = matchCode
+  orderInfo.status = status
+  delete orderInfo.id
 
   try {
-    const res = await userCreate(CusRecordListModel, { ...recordInfo })
+    // 更新司机端的订单状态
+    const driRes = await DriRecordListModel.update(
+      {
+        matchCode,
+        status,
+        cusNumIn,
+      },
+      {
+        where: {
+          id,
+        },
+      }
+    )
+    // 为乘客增加一条订单
+    const res = await userCreate(CusRecordListModel, { ...orderInfo })
+    console.log('-------res', res)
+    ctx.status = 200
+    ctx.body = {
+      success: true,
+    }
+  } catch (e) {
+    console.log(e)
+    ctx.status = 500
+    ctx.body = {
+      success: false,
+    }
+  }
+})
+
+/**
+ * @description 司机接单
+ */
+router.post('/matchDri', async (ctx) => {
+  const {  orderInfo, userName,nickName } = ctx.request.body
+  const { id } = orderInfo
+  // 生成唯一编码
+  const matchCode = uuid.v1()
+  // 订单状态， 满员为1  不满员为0
+  const status = 1
+  // 已上座乘客
+  const cusNumIn = orderInfo.cusNum
+
+   // 获取司机车牌号
+   let driInfo = await userQueryOne(DriverModel, { nickName })
+   driInfo = driInfo.toJSON()
+   console.log('driInfo',driInfo)
+
+   orderInfo.carCode = driInfo.carCode
+  orderInfo.userName = userName
+  orderInfo.matchCode = matchCode
+  orderInfo.status = status
+  orderInfo.cusNumIn = cusNumIn
+  delete orderInfo.id
+
+
+  try {
+    // 更改乘客订单状态
+    const cusRes = await CusRecordListModel.update(
+      {
+        matchCode,
+        status,
+      },
+      {
+        where: {
+          id,
+        },
+      }
+    )
+    // 为司机创建一条订单
+    const res = await userCreate(DriRecordListModel, { ...orderInfo })
     console.log('-------res', res)
     ctx.status = 200
     ctx.body = {
@@ -78,8 +151,14 @@ router.post('/getRecordList', async (ctx) => {
   if (request.search === '') {
     delete request.search
   }
-  const seat = request.seat
-  delete request.seat
+  // 如果是获取当月信息
+  // if (request.isMonth) {
+  //   const [monthStart, monthEnd] = currentMonthBet()
+  //   console.log('monthStart', monthStart, 'monthEnd', monthEnd)
+  //   request.startDate = monthStart
+  //   request.endDate = monthEnd
+  //   delete request.isMonth
+  // }
   if (request.startLocal) {
     request.startLocal = { [Op.like]: `%${request.startLocal}%` }
   }
@@ -114,13 +193,10 @@ router.post('/getRecordList', async (ctx) => {
   }
   console.log('request', request)
   try {
-    let res = await userQuery(CusRecordListModel, request, {
+    const res = await userQuery(CusRecordListModel, request, {
       order: [['date', 'DESC']],
     })
-    if (seat) {
-      const resJson = JSON.parse(JSON.stringify(res))
-      res = resJson.filter((item) => item.cusNum - item.cusNumIn >= seat)
-    }
+    // console.log('-----res----', res)
     ctx.status = 200
     ctx.body = {
       success: true,
@@ -140,8 +216,6 @@ router.post('/getRecordList', async (ctx) => {
  */
 router.post('/getRecordListDriver', async (ctx) => {
   const request = ctx.request.body
-  const seat = request.seat
-  delete request.seat
   // }
   if (request.startLocal) {
     request.startLocal = { [Op.like]: `%${request.startLocal}%` }
@@ -174,111 +248,14 @@ router.post('/getRecordListDriver', async (ctx) => {
   }
   console.log('request', request)
   try {
-    let res = await userQuery(DriRecordListModel, request, {
+    const res = await userQuery(DriRecordListModel, request, {
       order: [['date', 'DESC']],
     })
-    if (seat) {
-      const resJson = JSON.parse(JSON.stringify(res))
-      res = resJson.filter((item) => item.cusNum - item.cusNumIn === seat)
-    }
+    // console.log('-----res----', res)
     ctx.status = 200
     ctx.body = {
       success: true,
       data: res,
-    }
-  } catch (e) {
-    console.log('获取记录接口报错：', e)
-    ctx.status = 500
-    ctx.body = {
-      success: false,
-    }
-  }
-})
-
-/**
- * @description 获取订单详情（司机）
- */
-router.post('/getRecordDetailDriver', async (ctx) => {
-  const { matchCode } = ctx.request.body
-  try {
-    const res = await userQueryOne(DriRecordListModel, { matchCode })
-
-    ctx.status = 200
-    ctx.body = {
-      success: true,
-      info: res,
-    }
-  } catch (e) {
-    console.log('获取记录接口报错：', e)
-    ctx.status = 500
-    ctx.body = {
-      success: false,
-    }
-  }
-})
-
-/**
- * @description 完成订单
- */
-router.post('/updateCusRecord', async (ctx) => {
-  const {
-    id,
-    status,
-    matchCode,
-    userNickName,
-    nickName,
-    driNickName,
-    price,
-  } = ctx.request.body
-  const userPayObj = {}
-  const driPayObj = {}
-
-  try {
-    const res = await CusRecordListModel.update(
-      {
-        status,
-      },
-      { where: { id } }
-    )
-    const resDri = await DriRecordListModel.update(
-      {
-        status,
-      },
-      { where: { matchCode } }
-    )
-
-    /**
-     * 过账流程
-     * 1.用户余额、司机余额进行相应变更
-     * 2.充值记录表给双方增加支出与充值记录
-     */
-    if (status === 3) {
-      let userInfo = await userQueryOne(UserModel, { nickName })
-      let driInfo = await userQueryOne(DriverModel, { nickName: driNickName })
-      userInfo = userInfo.toJSON()
-      driInfo = driInfo.toJSON()
-      const userNewAmount = userInfo.amount - price
-      const driNewAmount = driInfo.amount + price
-      await UserModel.update(
-        {
-          amount: userNewAmount,
-        },
-        { where: { nickName: nickName } }
-      )
-      await DriverModel.update(
-        {
-          amount: driNewAmount,
-        },
-        { where: { nickName: driNickName } }
-      )
-      await userCreate(RechargeRecordModel,{nickName:nickName,money:price,type:0})
-      await userCreate(DriRechargeRecordModel,{nickName:driNickName,money:price,type:1})
-    }
-
-    ctx.status = 200
-    ctx.body = {
-      success: true,
-      info: 'ok',
     }
   } catch (e) {
     console.log('获取记录接口报错：', e)

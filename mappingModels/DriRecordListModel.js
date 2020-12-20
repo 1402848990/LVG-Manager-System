@@ -30,6 +30,10 @@ const CusRecordListModel = db.configureModel('driRecordList', {
   carCode:{
     type:db.STRING,
     allowNull:true
+  },
+  cusNumIn:{
+    type:db.cusNumIn,
+    allowNull:true
   }
 });
 

@@ -12,10 +12,9 @@ const bodyParser = require('koa-bodyparser');
 const User = require('./interface/User');
 const Driver = require('./interface/Driver');
 const Urgent = require('./interface/Urgent');
-const Classification = require('./interface/Classification');
-const Wish = require('./interface/WishList');
 const CusRecord = require('./interface/CusRecordList');
 const RechargeRecord = require('./interface/RechargeRecord')
+const MatchOrder = require('./interface/MatchOrder')
 
 const app =new Koa();
 app.proxy = true;
@@ -54,20 +53,20 @@ router.use('/interface/Urgent', Urgent);
  */
 router.use('/interface/RechargeRecord', RechargeRecord);
 
-/**
- * Classification接口
- */
-router.use('/interface/Classification', Classification);
 
-/**
- * Classification接口
- */
-router.use('/interface/Wish', Wish);
 
 /**
  * Record接口
  */
 router.use('/interface/CusRecord', CusRecord);
+
+/**
+ * MatchOrder接口
+ */
+router.use('/interface/MatchOrder', MatchOrder);
+
+// 定时任务
+require('./timingTask/order')
 
 
 router.get('/', async ctx => {
