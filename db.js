@@ -29,9 +29,9 @@ const sequelize = new Sequelize(dbname, username, password, {
 async function testDBConnect() {
   try {
     await sequelize.authenticate()
-    console.log('model and mysql connected successed')
+    console.log('临大信息学院辅导员助手mysql链接成功！')
   } catch (err) {
-    console.log('model and mysql connected failed', err)
+    console.log('临大信息学院辅导员助手mysql链接失败！', err)
   }
 }
 

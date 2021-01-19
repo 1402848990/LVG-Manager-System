@@ -1,6 +1,4 @@
 const Koa = require('koa');
-// ORM
-const Sequelize = require('sequelize');
 // 路由
 const route = require('koa-route');
 const router = require('koa-router')();
@@ -10,11 +8,7 @@ const cors = require('koa2-cors');
 const bodyParser = require('koa-bodyparser');
 // 导入接口
 const User = require('./interface/User');
-const Driver = require('./interface/Driver');
-const Urgent = require('./interface/Urgent');
-const CusRecord = require('./interface/CusRecordList');
-const RechargeRecord = require('./interface/RechargeRecord')
-const MatchOrder = require('./interface/MatchOrder')
+const Student = require('./interface/Student');
 
 const app =new Koa();
 app.proxy = true;
@@ -24,50 +18,25 @@ app.use(
   cors({
     origin: () => {
       // 允许跨域的地址
-      return '*';
+      return 'http://localhost:3000';
     },
-    exposeHeaders: ['WWW-Authenticate', 'Server-Authorization'],
+    exposeHeaders: ['WWW-Authenticate', 'Server-Authorization','Cookie','Access-Control-Allow-Origin'],
     maxAge: 5,
     credentials: true,
-    allowMethods: ['GET', 'POST', 'DELETE'],
-    allowHeaders: ['Content-Type', 'Authorization', 'Accept']
+    allowMethods: ['GET', 'POST', 'DELETE','post'],
+    allowHeaders: ['Content-Type', 'Authorization', 'Accept','Set-Cookie','Access-Control-Allow-Origin']
   })
 );
 
 /**
- * User接口
+ * 用户接口
  */
 app.use(bodyParser());
 router.use('/interface/User', User);
 /**
- * 司机接口
+ * 学生接口
  */
-router.use('/interface/Driver', Driver);
-/**
- * 紧急联系人接口
- */
-router.use('/interface/Urgent', Urgent);
-
-/**
- * RechargeRecord接口  充值接口
- */
-router.use('/interface/RechargeRecord', RechargeRecord);
-
-
-
-/**
- * Record接口
- */
-router.use('/interface/CusRecord', CusRecord);
-
-/**
- * MatchOrder接口
- */
-router.use('/interface/MatchOrder', MatchOrder);
-
-// 定时任务
-require('./timingTask/order')
-
+router.use('/interface/Stu', Student);
 
 router.get('/', async ctx => {
   ctx.body = 'index';

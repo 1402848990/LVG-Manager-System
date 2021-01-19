@@ -3,7 +3,7 @@
  */
 
 module.exports = {
-  dbname: 'pinche',
+  dbname: 'guide_manage-sys',
   username: 'root',
   password: '123456',
   host: 'localhost',
