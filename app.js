@@ -77,3 +77,9 @@ app.use(router.routes()).use(router.allowedMethods());
 
 // server 端口号
 app.listen('8088');
+
+console.log('line1')
+console.log('line2')
+console.log('line3')
+console.log('linea')
+
