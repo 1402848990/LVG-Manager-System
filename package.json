@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@alicloud/pop-core": "^1.7.9",
+    "ali-oss": "^6.16.0",
     "axios": "^0.19.2",
     "bcrypt": "^4.0.1",
     "http-proxy-middleware": "^1.0.3",

@@ -6,7 +6,7 @@ function proNum(min, max) {
 }
 
 // 添加数据
-async function userCreate(model, row) {
+async function mysqlCreate(model, row) {
   await model.create(row)
 }
 
@@ -90,7 +90,7 @@ function currentMonthBet() {
 }
 
 module.exports = {
-  userCreate,
+  mysqlCreate,
   userBulkCreate,
   userQuery,
   userQueryOne,

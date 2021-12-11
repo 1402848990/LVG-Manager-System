@@ -4,8 +4,8 @@
 const router = require('koa-router')()
 const Sequelize = require('sequelize')
 const models = require('../autoScanModels')
-const { StudentModel, CourseModel, ExamModel } = models
-const { userCreate, userQuery, userQueryOne } = require('../utils')
+const { StudentModel, CourseModel, ExamModel,CategoryModel } = models
+const { mysqlCreate, userQuery, userQueryOne } = require('../utils')
 
 const Op = Sequelize.Op
 
@@ -18,6 +18,12 @@ router.post('/list', async (ctx) => {
   const cookie = decodeURIComponent(ctx.header['set-cookie'])
   const { id } = JSON.parse(cookie)
   const { filter } = ctx.request.body
+  const { name } = filter || {}
+  if (name) {
+    filter.name = {
+      [Op.like]: `%${name}%`,
+    }
+  }
   // 从数据库中查询并根据id倒序
   const data = await userQuery(
     StudentModel,
@@ -33,20 +39,18 @@ router.post('/list', async (ctx) => {
 })
 
 /**
- *  POST api/Stu/add
- *  新建学生
+ *  POST api/Category/add
+ *  新增类目
  */
 router.post('/add', async (ctx) => {
-  const cookie = decodeURIComponent(ctx.header['set-cookie'])
-  const { id } = JSON.parse(cookie)
+  // const cookie = decodeURIComponent(ctx.header['set-cookie'])
+  // const { id } = JSON.parse(cookie)
   const request = ctx.request.body
   console.log('request', request)
-  request.userId = id
-  const data = await userCreate(StudentModel, request)
+  await mysqlCreate(CategoryModel, request)
   ctx.status = 200
   ctx.body = {
     success: true,
-    data,
   }
 })
 
@@ -129,7 +133,7 @@ router.post('/courseAdd', async (ctx) => {
   const cookie = decodeURIComponent(ctx.header['set-cookie'])
   const { id } = JSON.parse(cookie)
   const { name } = ctx.request.body
-  const data = await userCreate(CourseModel, { name, userId: id })
+  const data = await mysqlCreate(CourseModel, { name, userId: id })
   ctx.status = 200
   ctx.body = {
     success: true,
@@ -181,7 +185,7 @@ router.post('/examAdd', async (ctx) => {
   const { id } = JSON.parse(cookie)
   const request = ctx.request.body
   console.log('request', request)
-  const data = await userCreate(ExamModel, { ...request, userId: id })
+  const data = await mysqlCreate(ExamModel, { ...request, userId: id })
   ctx.status = 200
   ctx.body = {
     success: true,
