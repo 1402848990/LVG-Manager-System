@@ -63,7 +63,9 @@ async function dataWrite() {
       )
       // console.log('selectedGoodList', selectedGoodList)
       selectedGoodList.forEach(async (good) => {
-        const nows = +`${Date.now()}`.split('1638')[1]
+        let nows = `${Date.now()}`.split(`${Date.now().toString().slice(0,3)}`)[1]
+        nows?null : nows = 
+        console.log('nows',nows)
         const {
           stock,
           rootPrice,

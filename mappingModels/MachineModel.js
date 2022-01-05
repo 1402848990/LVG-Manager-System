@@ -18,7 +18,10 @@ const MachineModel = db.configureModel('Machine', {
   personName: db.STRING, // 负责人
   personId: db.INTEGER, // 负责人id
   cellNum: db.INTEGER, // 格子数量
-  goodIds: db.STRING, // 商品id数组
+  goodIds: { 
+    type: db.STRING,
+    allowNull: true
+  }, 
 });
 
 module.exports = MachineModel;
