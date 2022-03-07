@@ -3,7 +3,7 @@
  */
 
 module.exports = {
-  dbname: 'guide_manage-sys',
+  dbname: 'ncov_data',
   username: 'root',
   password: '123456',
   host: 'localhost',

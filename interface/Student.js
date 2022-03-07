@@ -18,6 +18,12 @@ router.post('/list', async (ctx) => {
   const cookie = decodeURIComponent(ctx.header['set-cookie'])
   const { id } = JSON.parse(cookie)
   const { filter } = ctx.request.body
+  const { name } = filter || {}
+  if (name) {
+    filter.name = {
+      [Op.like]: `%${name}%`,
+    }
+  }
   // 从数据库中查询并根据id倒序
   const data = await userQuery(
     StudentModel,
@@ -79,7 +85,7 @@ router.post('/delete', async (ctx) => {
 })
 
 /**
- *  POST api/User/updateContact
+ *  POST api/User/updateMessage
  *  修改学生信息
  */
 router.post('/update', async (ctx) => {

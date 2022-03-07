@@ -3,11 +3,48 @@
  */
 const router = require('koa-router')()
 const Sequelize = require('sequelize')
+const axios = require('axios')
+const md5 = require('md5')
 const models = require('../autoScanModels')
-const { UserModel, MessageModel, NoteModel, CityNoticeModel } = models
+const { UserModel, MessageModel, NoteModel, GlobalNoticeModel } = models
 const { userCreate, userQuery, userQueryOne, userDelete } = require('../utils')
 
 const Op = Sequelize.Op
+
+/**
+ *  POST api/Global/globalViewData
+ *  获取总览数据
+ */
+router.post('/globalViewData', async (ctx) => {
+  const { date } = ctx.request.body
+  const res = await axios.get(
+    `http://api.tianapi.com/ncov/index?key=d3399928c10cc557a6dd52949ff510d2&date=${date}`
+  )
+  console.log('res', res)
+  ctx.status = 200
+  ctx.body = {
+    success: true,
+    data: res.data.newslist[0],
+  }
+})
+
+/**
+ *  POST api/Global/cityData
+ *  获取城市疫情数据
+ */
+router.post('/allCityData', async (ctx) => {
+  const res = await axios.get(
+    `https://rijb.api.storeapi.net/api/94/219?format=json&appid=13463&sign=${md5(
+      `appid13463formatjson53ac8bcc1085c2a596858b56ae6997ea`
+    )}`
+  )
+  console.log('res', res)
+  ctx.status = 200
+  ctx.body = {
+    success: true,
+    data: res.data.retdata,
+  }
+})
 
 /**
  *  POST api/User/messageList
@@ -21,6 +58,23 @@ router.post('/messageList', async (ctx) => {
   const data = await userQuery(
     MessageModel,
     { ...filter, userId: id },
+    { order: [['id', 'DESC']] }
+  )
+  ctx.status = 200
+  ctx.body = {
+    success: true,
+    data,
+  }
+})
+
+/**
+ *  POST api/User/getSiteMessage
+ *  获取启用的通告列表
+ */
+router.post('/getSiteMessage', async (ctx) => {
+  const data = await userQuery(
+    MessageModel,
+    { status: 1 },
     { order: [['id', 'DESC']] }
   )
   ctx.status = 200
@@ -71,27 +125,6 @@ router.post('/updateMessage', async (ctx) => {
   delete changeData.id
   await MessageModel.update(
     { ...changeData },
-    {
-      where: {
-        id,
-      },
-    }
-  )
-  ctx.status = 200
-  ctx.body = {
-    success: true,
-  }
-})
-
-/**
- *  POST api/User/startMessage
- *  启用通告信息
- */
-router.post('/startMessage', async (ctx) => {
-  const { id } = ctx.request.body
-  await MessageModel.update({ status: 0 },{where:{}})
-  await MessageModel.update(
-    { status: 1 },
     {
       where: {
         id,
@@ -178,11 +211,30 @@ router.post('/updateNote', async (ctx) => {
   }
 })
 
+
 /**
- *  POST api/User/cityNoticeList
- *  城市播报列表
+ *  POST api/User/siteGlobalNoticeList
+ *  站点全国播报列表
  */
-router.post('/cityNoticeList', async (ctx) => {
+ router.post('/siteGlobalNoticeList', async (ctx) => {
+  // 根据id倒序
+  const data = await userQuery(
+    GlobalNoticeModel,
+    {},
+    { order: [['id', 'DESC']] }
+  )
+  ctx.status = 200
+  ctx.body = {
+    success: true,
+    data,
+  }
+})
+
+/**
+ *  POST api/User/globalNoticeList
+ *  全国播报列表
+ */
+router.post('/globalNoticeList', async (ctx) => {
   const cookie = decodeURIComponent(ctx.header['set-cookie'])
   const { id } = JSON.parse(cookie)
   const { filter } = ctx.request.body
@@ -203,7 +255,7 @@ router.post('/cityNoticeList', async (ctx) => {
   console.log('filter', filter)
   // 根据id倒序
   const data = await userQuery(
-    CityNoticeModel,
+    GlobalNoticeModel,
     { ...filter, userId: id },
     { order: [['id', 'DESC']] }
   )
@@ -215,25 +267,13 @@ router.post('/cityNoticeList', async (ctx) => {
 })
 
 /**
- *  POST api/User/siteCityNoticeList
- *  站点城市播报列表
+ *  POST api/User/siteGlobalNoticeList
+ *  站点获取全国播报列表
  */
- router.post('/siteCityNoticeList', async (ctx) => {
-  const { filter } = ctx.request.body
-  const { areaName } = filter || {}
-  console.log('areaName', areaName)
-  if (areaName) {
-    filter.areaName = {
-      [Op.like]: `%${areaName}%`,
-    }
-  } else {
-    delete filter.areaName
-  }
-  console.log('filter', filter)
+ router.post('/siteGlobalNoticeList', async (ctx) => {
   // 根据id倒序
   const data = await userQuery(
-    CityNoticeModel,
-    { ...filter},
+    GlobalNoticeModel,
     { order: [['id', 'DESC']] }
   )
   ctx.status = 200
@@ -244,12 +284,12 @@ router.post('/cityNoticeList', async (ctx) => {
 })
 
 /**
- *  POST api/User/deleteCityNotice
- *  删除播报城市
+ *  POST api/User/deleteGlobalNotice
+ *  删除播报全国
  */
-router.post('/deleteCityNotice', async (ctx) => {
+router.post('/deleteGlobalNotice', async (ctx) => {
   const { id } = ctx.request.body
-  const data = await CityNoticeModel.destroy({ where: { id } })
+  const data = await GlobalNoticeModel.destroy({ where: { id } })
   ctx.status = 200
   ctx.body = {
     success: true,
@@ -258,15 +298,15 @@ router.post('/deleteCityNotice', async (ctx) => {
 })
 
 /**
- *  POST api/User/addCityNotice
- *  新建城市播报
+ *  POST api/User/addGlobalNotice
+ *  新建全国播报
  */
-router.post('/addCityNotice', async (ctx) => {
+router.post('/addGlobalNotice', async (ctx) => {
   const cookie = decodeURIComponent(ctx.header['set-cookie'])
   const { id } = JSON.parse(cookie)
   const request = ctx.request.body
   request.userId = id
-  const data = await userCreate(CityNoticeModel, request)
+  const data = await userCreate(GlobalNoticeModel, request)
   ctx.status = 200
   ctx.body = {
     success: true,
@@ -275,15 +315,15 @@ router.post('/addCityNotice', async (ctx) => {
 })
 
 /**
- *  POST api/User/updateCityNotice
- *  修改城市播报
+ *  POST api/User/updateGlobalNotice
+ *  修改全国播报
  */
-router.post('/updateCityNotice', async (ctx) => {
+router.post('/updateGlobalNotice', async (ctx) => {
   const changeData = ctx.request.body
   const request = changeData
   const { id } = request
   delete request.id
-  await CityNoticeModel.update(
+  await GlobalNoticeModel.update(
     { ...request },
     {
       where: {
@@ -298,12 +338,12 @@ router.post('/updateCityNotice', async (ctx) => {
 })
 
 /**
- *  POST api/User/detailCityNotice
- *  返回城市播报详情
+ *  POST api/User/detailGlobalNotice
+ *  返回全国播报详情
  */
-router.post('/detailCityNotice', async (ctx) => {
+router.post('/detailGlobalNotice', async (ctx) => {
   const { id } = ctx.request.body
-  const data = await userQueryOne(CityNoticeModel, { id })
+  const data = await userQueryOne(GlobalNoticeModel, { id })
   ctx.status = 200
   ctx.body = {
     success: true,
