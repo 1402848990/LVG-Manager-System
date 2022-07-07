@@ -27,7 +27,7 @@
     "koa-websocket": "^6.0.0",
     "koa2-cors": "^2.0.6",
     "koa2-proxy-middleware": "^0.0.4",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "multer": "^1.4.2",
     "mysql2": "^2.1.0",
     "node-uuid": "^1.4.8",
