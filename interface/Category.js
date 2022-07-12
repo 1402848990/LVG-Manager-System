@@ -1,5 +1,5 @@
 /**
- *  学生相关接口（成绩、列表、课程等）
+ *  类目相关接口
  */
 const router = require('koa-router')()
 const Sequelize = require('sequelize')

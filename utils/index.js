@@ -57,15 +57,6 @@ async function userDelete(model, where) {
   const res = await model.destroy(where)
 }
 
-// 获取IP
-function getClientIP(req) {
-  return (
-    req.headers['x-forwarded-for'] ||
-    req.connection.remoteAddress ||
-    req.socket.remoteAddress ||
-    req.connection.socket.remoteAddress
-  )
-}
 
 // 获取当前月的起始时间
 function currentMonthBet() {
@@ -97,7 +88,6 @@ module.exports = {
   userUpdate,
   userBulkUpdate,
   userDelete,
-  getClientIP,
   proNum,
   currentMonthBet,
 }

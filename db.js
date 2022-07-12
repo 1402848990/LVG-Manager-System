@@ -29,7 +29,7 @@ const sequelize = new Sequelize(dbname, username, password, {
 async function testDBConnect() {
   try {
     await sequelize.authenticate()
-    console.log('mysql链接成功！')
+    // console.log('mysql链接成功！')
   } catch (err) {
     console.log('mysql链接失败！', err)
   }

@@ -1,13 +1,12 @@
 /**
- *  学生相关接口（成绩、列表、课程等）
+ *  账目相关接口
  */
 const router = require('koa-router')()
 const Sequelize = require('sequelize')
 const models = require('../autoScanModels')
 const { AssetModel } = models
-const { mysqlCreate, userQuery, userQueryOne } = require('../utils')
+const { userQuery } = require('../utils')
 
-const Op = Sequelize.Op
 
 /**
  *  POST api/Assest/getAll
